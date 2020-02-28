@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DOCTYPE엘리먼트 -->
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <!-- mapper.xml문서의 최상위 엘리먼트로 이 안에다 sql처리를 만들어 줌 --> 
+ <!-- namespace속성은 interface의 패키지포함 경로 -->  
+
+<mapper namespace="com.jung.TeamProject.dao.UDao">
+ 	
+ 	<!-- 회원가입 -->
+ 	<insert id="Join"  parameterType="com.jung.TeamProject.dto.UserDto">
+ 		INSERT INTO USER_INFO (USER_NO, USER_ID, USER_PW, USER_NAME, USER_SEX, USER_EMAIL, USER_PHONE, USER_PROFILE, USER_AG1, USER_AG2, USER_CODE) 
+		VALUES (USER_SEQ.NEXTVAL, #{user_id}, #{user_pw}, #{user_name}, #{user_sex}, #{user_email}, #{user_phone}, #{user_profile}, #{user_ag1}, #{user_ag2}, #{user_code})
+ 	</insert>
+ 	
+ 	<!-- 회원가입 아이디 중복체크 -->
+ 	<select id="IdCheck" resultType="String" parameterType="com.jung.TeamProject.dto.UserDto">
+ 		SELECT USER_ID
+ 		FROM USER_INFO
+ 		WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 회원목록 -->
+ 	<select id="Userlist" resultType="com.jung.TeamProject.dto.UserDto">
+ 		SELECT * FROM USER_INFO ORDER BY USER_DATE
+ 	</select>
+ 	
+	<!-- 회원상세 목록 -->
+ 	<select id="UserDetail" resultType="com.jung.TeamProject.dto.UserDto" parameterType="Integer">
+ 		SELECT * FROM USER_INFO WHERE USER_NO = #{user_no} ORDER BY USER_DATE
+ 	</select>
+ 	
+ 	<!-- 임시비밀번호 -->
+ 	<select id="UpdatePw" resultType="com.jung.TeamProject.dto.UserDto">
+ 		UPDATE USER_INFO SET USER_PW = #{user_pw} WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 비밀번호변경 -->
+ 	<select id="pwModiDo" resultType="com.jung.TeamProject.dto.UserDto">
+ 		UPDATE USER_INFO SET USER_PW = #{user_pw} WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 회원정보 변경 -->
+ 	<select id="memberModiDo" resultType="com.jung.TeamProject.dto.UserDto">
+ 		UPDATE USER_INFO 
+ 		SET USER_NAME = #{user_name}, USER_SEX = #{user_sex}, USER_EMAIL = #{user_email}, USER_PHONE = #{user_phone}, USER_PROFILE = #{user_profile}
+ 		WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 회원탈퇴  -->
+ 	<select id="memberDelDo" resultType="com.jung.TeamProject.dto.UserDto">
+ 		DELETE USER_INFO 
+ 		WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 메뉴 주문(주소내역) -->
+ 	<insert id="Order1"  parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		INSERT INTO MENU_ORDER (ONO, OSNAME, ONAME, OAD1, OAD2, OPHONE, OTEXT, OAMOUNT, OSTATUS, USER_ID, ODATE, SNO) 
+		VALUES (#{oNo}, #{osName}, #{oName}, #{oAd1}, #{oAd2}, #{oPhone}, #{oText}, #{oAmount},  '주문처리중', #{user_id}, #{oDate}, #{sNo})
+ 	</insert>
+ 	
+ 	<!-- 메뉴 주문(상세내역) -->
+ 	<insert id="Order"  parameterType="com.jung.TeamProject.dto.OrderDetailDto">
+ 		INSERT INTO ORDER_DETAIL (ODNO, OMNO, OMNAME, OMSTOCK, OMPRICE, ONO) 
+		VALUES (ORDER_DETAIL_SEQ.NEXTVAL, #{omNo}, #{omName}, #{omStock}, #{omPrice}, #{oNo})
+ 	</insert>
+ 	
+ 	<!-- 회원 주문목록 -->
+ 	<select id="MyOrderInfo" resultType="com.jung.TeamProject.dto.OrderDto" parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * FROM MENU_ORDER WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 회원 주문 날짜조회한 목록 -->
+ 	<select id="OrderDcheck" resultType="com.jung.TeamProject.dto.OrderDto" parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * FROM MENU_ORDER WHERE (ODATE BETWEEN #{oDate} AND #{oDate1, jdbcType=DATE}) AND (USER_ID = #{user_id})
+ 	</select>
+ 	
+ 	<!-- 회원 주문 상세목록(주문테이블) -->
+ 	<select id="MyOrderInfoDetail" resultType="com.jung.TeamProject.dto.OrderDto" parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * FROM MENU_ORDER WHERE ONO = #{oNo}
+ 	</select>
+ 	
+ 	<!-- 회원 주문 상세목록(주문상세 테이블) -->
+ 	<select id="MyOrderInfoDetail1" resultType="com.jung.TeamProject.dto.OrderDetailDto" parameterType="com.jung.TeamProject.dto.OrderDetailDto">
+ 		SELECT * FROM ORDER_DETAIL WHERE ONO = #{oNo}
+ 	</select>
+ 	
+
+</mapper>
+ 
+ <!-- 
+ mapper엘리먼트 안에는 각 sql의 DML인 select,insert,delete,update등의 엘리먼트가 옴
+ 기타엘리먼트로는  sql - 다른 구문에서 재사용하기 위한 SQL 조각,
+ cache - 해당 네임스페이스을 위한 캐시 설정,
+ cache-ref - 다른 네임스페이스의 캐시 설정에 대한 참조,
+ resultMap - 데이터베이스 결과데이터를 객체에 로드하는 방법을 정의하는 엘리먼트
+ id는 interface의 메서드 이름,parameterType은 메서드의 파라메터 변수형,resultType은 
+ 메서드의 리턴 타입을 적어줌(객체형은 패키지 까지 포함)
+ #{파라메터명}으로 preparedStatement의 ?에 사용되는 값
+  -->

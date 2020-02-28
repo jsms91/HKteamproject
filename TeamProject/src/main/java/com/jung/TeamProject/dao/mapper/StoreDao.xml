@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DOCTYPE엘리먼트 -->
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <!-- mapper.xml문서의 최상위 엘리먼트로 이 안에다 sql처리를 만들어 줌 --> 
+ <!-- namespace속성은 interface의 패키지포함 경로 --> 
+ 
+ <mapper namespace="com.jung.TeamProject.dao.SDao">
+ 
+ 	<!-- 가게등록 화면(회원아이디 첨부)-(관리자) -->
+ 	<select id='RegisterView' resultType='com.jung.TeamProject.dto.ApplyDto' parameterType="String">
+ 		SELECT * FROM STORE_APPLY WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 가게 등록하기 + 입점상태 처리완료로 바꾸기--> 
+ 	<insert id="Register"  parameterType="com.jung.TeamProject.dto.StoreDto">
+ 		INSERT INTO STORE (SNO, SNAME, BNAME, BNO, SIMG, SAD, SLAT, SLNG, SPHONE, SCATEGORY, STIP, MPRICE, USER_ID) 
+		VALUES (STORE_SEQ.NEXTVAL, #{sName}, #{bName}, #{bNo}, #{sImg}, #{sAd}, #{sLat}, #{sLng}, #{sPhone}, #{sCategory}, #{sTip}, #{mPrice}, #{user_id})
+ 	</insert>
+ 	
+ 	<insert id='ApplyStatusEnd' parameterType='com.jung.TeamProject.dto.ApplyDto'>
+	 	UPDATE STORE_APPLY SET ASTATUS = '처리완료'
+	 							WHERE ASNO = #{asNo}
+ 	</insert>
+ 	
+ 	<!-- 가게 내용 수정(관리자) -->
+ 	<insert id="StoreModify" parameterType="com.jung.TeamProject.dto.StoreDto">
+	 	UPDATE STORE SET SNAME=#{sName}, BNAME=#{bName}, BNO=#{bNo}, SAD=#{sAd}, 
+	 										SLAT=#{sLat}, SLNG=#{sLng}, SPHONE=#{sPhone},
+	 										SCATEGORY=#{sCategory}, STIP=#{sTip}, MPRICE=#{mPrice}
+	 							WHERE SNO = #{sNo}
+ 	</insert>
+ 	
+ 	<!-- 가게 내용 수정(사장) -->
+ 	<insert id="BSModify" parameterType="com.jung.TeamProject.dto.StoreDto">
+ 		UPDATE STORE SET STIP=#{sTip}, MPRICE=#{mPrice} WHERE SNO = #{sNo}
+ 	</insert>
+ 	
+	<!-- 가게 이미지 수정 -->
+ 	<insert id="ImgModify" parameterType="com.jung.TeamProject.dto.StoreDto">
+ 		UPDATE STORE SET SIMG=#{sImg} WHERE SNO = #{sNo}
+ 	</insert>
+ 	
+ 	<!-- 전체 가게 목록(관리자) --> 
+ 	<select id='Storelist' resultType='com.jung.TeamProject.dto.StoreDto'>
+ 		SELECT * FROM STORE ORDER BY SDATE
+ 	</select>
+ 	
+ 	<!-- 내 가게 목록(사장) --> 
+ 	<select id='MyStorelist' resultType='com.jung.TeamProject.dto.StoreDto' parameterType='com.jung.TeamProject.dto.StoreDto'>
+ 		SELECT * FROM STORE WHERE USER_ID = #{user_id}
+ 	</select>
+ 	
+ 	<!-- 가게 상세 목록 --> 
+ 	<select id='StoreDetail' resultType='com.jung.TeamProject.dto.StoreDto' parameterType='Integer'>
+ 		SELECT * FROM STORE WHERE SNO = #{sNo} ORDER BY SDATE
+ 	</select>
+ 	
+ 	<!-- 가게 수정 화면 -->
+ 	<select id='RegisterContent' resultType='com.jung.TeamProject.dto.StoreDto' parameterType='Integer'>
+ 		SELECT * FROM STORE WHERE SNO = #{sNo}
+ 	</select>
+ 	
+ 	<!-- 가게 삭제 -->
+	<delete id='StoreDelete' parameterType='Integer'>
+		DELETE FROM STORE WHERE SNO = #{sNo}
+ 	</delete> 
+ 	
+ 	<!-- 카테고리 가게 찾기 --> 
+ 	<select id='Category' resultType='com.jung.TeamProject.dto.StoreDto' parameterType='com.jung.TeamProject.dto.StoreDto'>
+ 		SELECT * 
+ 		FROM STORE
+ 		WHERE (SLAT between #{sLat}-0.015 and #{sLat}+0.015) and (SLNG between #{sLng}-0.015 and #{sLng}+0.015) and (SCATEGORY = #{sCategory})
+ 	</select>
+ 	
+ 	
+ 	<!-- 가게 찾기(성공) 메인 + 전체보기 --> 
+ 	<select id='AdSearch' resultType='com.jung.TeamProject.dto.StoreDto' parameterType='com.jung.TeamProject.dto.StoreDto'>
+ 		SELECT * 
+ 		FROM STORE
+ 		WHERE (SLAT between #{sLat}-0.015 and #{sLat}+0.015) and (SLNG between #{sLng}-0.015 and #{sLng}+0.015)
+ 	</select>
+ 	
+ 	<!-- ==================================================================================================================== -->
+ 	
+ 	<!-- 입점문의 등록하기  + 회원아이디 있는지 확인--> 
+ 	<insert id='Apply'  parameterType='com.jung.TeamProject.dto.ApplyDto'>
+ 		INSERT INTO STORE_APPLY (ASNO, ASNAME, ABNO, ASLAT, ASLNG, ASAD, ASPHONE, ASCATEGORY, ASTATUS, USER_ID) 
+		VALUES (STORE_APPLY_SEQ.NEXTVAL, #{asName}, #{abNo}, #{asLat}, #{asLng}, #{asAd}, #{asPhone}, #{asCategory}, '문의중', #{user_id})
+ 	</insert>
+ 	
+ 	<!-- 입점문의 수정하기(사장) -->
+ 	<insert id='ApplyModify' parameterType='com.jung.TeamProject.dto.ApplyDto'>
+	 	UPDATE STORE_APPLY SET ASNAME=#{asName}, ABNO=#{abNo}, ASLAT=#{asLat}, ASLNG=#{asLng}, 
+	 										ASAD=#{asAd}, ASPHONE=#{asPhone}, ASCATEGORY=#{asCategory}
+	 							WHERE ASNO = #{asNo}
+ 	</insert>
+ 	
+ 	<!-- 입점문의 처리상태만 수정(관리자) -->
+ 	<insert id='ApplyStatus' parameterType='com.jung.TeamProject.dto.ApplyDto'>
+ 		UPDATE STORE_APPLY SET ASTATUS = #{aStatus} WHERE ASNO = #{asNo}
+ 	</insert>
+ 	
+ 	<!-- 입점문의 목록(관리자) --> 
+ 	<select id='Applylist' resultType='com.jung.TeamProject.dto.ApplyDto'>
+ 		SELECT * FROM STORE_APPLY ORDER BY ASDATE
+ 	</select>
+ 	
+	<!-- 입점문의 목록(사장꺼만 보이게) -->  
+ 	<select id='MyApplylist' resultType='com.jung.TeamProject.dto.ApplyDto' parameterType='com.jung.TeamProject.dto.ApplyDto'>
+ 		SELECT * FROM STORE_APPLY WHERE USER_ID = #{user_id}
+ 	</select>
+	
+ 	
+ 	<!-- 입점문의 상세목록  입점문의내용 + 입점문의한 회원정보 (사장,관리자)--> 
+ 	<select id='ApplyDetail' resultType='com.jung.TeamProject.dto.ApplyDetailDto' parameterType='Integer'>
+ 		SELECT * 
+ 		FROM USER_INFO US, STORE_APPLY SA 
+ 		WHERE US.USER_ID = ( SELECT USER_ID
+ 							 FROM STORE_APPLY
+ 							 WHERE ASNO = #{asNo})
+ 			  AND
+ 			  SA.USER_ID = ( SELECT USER_ID
+ 							 FROM STORE_APPLY
+ 							 WHERE ASNO = #{asNo})
+ 		ORDER BY ASDATE
+ 			  
+ 	</select>
+ 	
+ 	<!-- 입점문의 수정화면(사장) --> 
+ 	<select id='ApplyContent' resultType='com.jung.TeamProject.dto.ApplyDto' parameterType='Integer'>
+ 		SELECT * FROM STORE_APPLY WHERE ASNO = #{asNo}
+ 	</select>
+ 	
+ 	<!-- 입점문의 삭제(사장) -->
+ 	<delete id='ApplyDelete' parameterType='Integer'>
+		DELETE FROM STORE_APPLY WHERE ASNO = #{asNo}
+ 	</delete> 
+ 	
+ 	<!-- ==================================================================================================================== -->
+ 	
+ 	<!-- 메뉴 등록하기 --> 
+ 	<insert id="MenuRegister"  parameterType="com.jung.TeamProject.dto.MenuDto">
+ 		INSERT INTO MENU (MNO, MNAME, MIMG, MPRICE, MTITLE1, MTITLE2, MINFO, SNO) 
+		VALUES (MENU_SEQ.NEXTVAL, #{mName}, #{mImg}, #{mPrice}, #{mTitle1}, #{mTitle2}, #{mInfo}, #{sNo})
+ 	</insert>
+ 	
+ 	<!-- 메뉴 수정(내용만) -->
+ 	<insert id="MenuModify" parameterType="com.jung.TeamProject.dto.MenuDto">
+	 	UPDATE MENU SET MNAME=#{mName}, MPRICE=#{mPrice}, MINFO=#{mInfo}
+	 							WHERE MNO = #{mNo}
+ 	</insert>
+ 	
+ 	<!-- 메뉴 이미지 수정화면(모달) -->
+ 	<select id='MImgModify' resultType='com.jung.TeamProject.dto.MenuDto' parameterType='com.jung.TeamProject.dto.MenuDto'>
+ 		SELECT * FROM MENU WHERE MNO = #{mNo} ORDER BY MNAME
+ 	</select>
+ 	
+ 	<!-- 메뉴 이미지 수정 -->
+ 	<insert id="BMImgModify" parameterType="com.jung.TeamProject.dto.MenuDto">
+ 		UPDATE MENU SET MIMG=#{mImg} WHERE MNO = #{mNo}
+ 	</insert>
+ 	
+ 	<!-- 대표 메뉴 -->
+ 	<select id='MTList' resultType='com.jung.TeamProject.dto.MenuDto' parameterType="com.jung.TeamProject.dto.MenuDto">
+ 		SELECT * FROM MENU WHERE MTITLE2 = '대표메뉴' AND SNO = #{sNo} ORDER BY MNAME
+ 	</select>
+ 	 
+ 	<!-- 메인 메뉴 -->
+ 	<select id='MMList' resultType='com.jung.TeamProject.dto.MenuDto' parameterType="com.jung.TeamProject.dto.MenuDto">
+ 		SELECT * FROM MENU WHERE MTITLE1 = '메인' AND SNO = #{sNo} ORDER BY MNAME
+ 	</select>
+ 	
+ 	<!-- 사이드 메뉴 -->
+ 	<select id='MSList' resultType='com.jung.TeamProject.dto.MenuDto' parameterType="com.jung.TeamProject.dto.MenuDto">
+ 		SELECT * FROM MENU WHERE MTITLE1 = '사이드' AND SNO = #{sNo} ORDER BY MNAME
+ 	</select>
+ 	
+ 	<!-- 메뉴 삭제 -->
+ 	<delete id='MenuDelete' parameterType='Integer'>
+		DELETE FROM MENU WHERE MNO = #{mNo}
+ 	</delete> 
+ 	
+ 	<!-- ==================================================================================================================== -->
+ 	<!-- 내 가게 주문목록(사장) - 오늘꺼만 -->
+ 	<select id='MyStoreOrder' resultType='com.jung.TeamProject.dto.OrderDto' parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * FROM MENU_ORDER WHERE SNO = (
+ 												SELECT SNO
+ 												FROM STORE
+ 												WHERE USER_ID = #{user_id}
+ 											 )
+ 									   AND
+ 									   
+ 									   ODATE = #{oDate}
+ 	</select>
+ 	
+ 	<!-- 내 가게 주문상태별 목록(사장) -->
+ 	<select id='StatusOrderList' resultType='com.jung.TeamProject.dto.OrderDto' parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * FROM MENU_ORDER WHERE SNO = (
+ 												SELECT SNO
+ 												FROM STORE
+ 												WHERE USER_ID = #{user_id}
+ 											 )
+ 									   AND
+ 									   
+ 									   OSTATUS = #{oStatus} AND ODATE = #{oDate}
+ 	</select>
+ 	
+ 	<!-- 내 가게 주문상세내역-주소(사장) -->
+ 	<select id='OrderDetail1' resultType='com.jung.TeamProject.dto.OrderDto' parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * 
+ 		FROM MENU_ORDER
+ 		WHERE ONO = #{oNo}
+ 	</select>
+ 	
+ 	<!-- 내 가게 주문상세내역-메뉴(사장) -->
+ 	<select id='OrderDetail2' resultType='com.jung.TeamProject.dto.OrderDetailDto' parameterType="com.jung.TeamProject.dto.OrderDetailDto">
+ 		SELECT * 
+ 		FROM ORDER_DETAIL
+ 		WHERE ONO = #{oNo}
+ 	</select>
+ 	
+ 	<!-- 주문내역 주문상태처리 수정(사장) -->
+ 	<insert id="oStatusModify" parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		UPDATE MENU_ORDER SET OSTATUS=#{oStatus} WHERE ONO = #{oNo}
+ 	</insert>
+ 	
+ 	<!-- 주문전체내역(사장) SNO = 대신 IN가능-->
+ 	<select id='AllOrderList' resultType='com.jung.TeamProject.dto.OrderDto' parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * 
+ 		FROM MENU_ORDER
+ 		WHERE SNO = (
+						SELECT SNO
+						FROM STORE
+						WHERE USER_ID = #{user_id}
+					 )
+ 	</select>
+ 	
+ 	<!-- 전체주문 날짜조회한 목록(사장) -->
+ 	<select id="AllOrderCheck" resultType="com.jung.TeamProject.dto.OrderDto" parameterType="com.jung.TeamProject.dto.OrderDto">
+ 		SELECT * 
+ 		FROM MENU_ORDER 
+ 		WHERE (ODATE BETWEEN #{oDate} AND #{oDate1, jdbcType=DATE}) AND (SNO = (
+ 																				 SELECT SNO
+ 																				 FROM STORE
+ 																				 WHERE USER_ID = #{user_id}
+ 																				)
+ 																		 )
+ 	</select>
+ 	
+ 	
+</mapper>
